@@ -6,9 +6,23 @@ output "vpc_id" {
   description = "Output the ID for the primary VPC"
   value       = aws_vpc.vpc.id
 }
-output "public_url" {
+output "public_url1" {
   description = "Public URL for our Ubuntu Server"
-  value       = "https://${aws_instance.ubuntu_server.public_ip}:8080/index.html"
+  value       = "https://${aws_instance.ubuntu_server[0].public_ip}"
+}
+output "public_url2" {
+  description = "Public URL for our Ubuntu Server"
+  value       = "https://${aws_instance.ubuntu_server[1].public_ip}"
+}
+output "public_url3" {
+  description = "Public URL for our Ubuntu Server"
+  value       = "https://${aws_instance.ubuntu_server[2].public_ip}"
+}
+
+output "elb_dns" {
+  description = "Public DNS ELB"
+  value = aws_elb.elb.dns_name
+  
 }
 output "vpc_information" {
   description = "VPC Information about Environment"
@@ -21,3 +35,8 @@ output "vpc_name" {
 
   value = "vpc_name is: ${aws_vpc.vpc.tags.Name}"
 }
+
+# output "private_key" {
+#   description = "Private Key"
+#   value = "private_key name is: ${aws_vpc.private.key}"
+# }
