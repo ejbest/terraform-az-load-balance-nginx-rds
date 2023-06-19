@@ -1,7 +1,7 @@
 #Deploy the private subnets
-resource "aws_subnet" "private_EJB_subnets" {
-  for_each          = var.private_EJB_subnets
-  vpc_id            = aws_vpc.vpc.id
+resource "aws_subnet" "EJB_private_subnets" {
+  for_each          = var.EJB_private_subnets
+  vpc_id            = aws_vpc.EJB_vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
   availability_zone = tolist(data.aws_availability_zones.available.names)[each.value]
   tags = {
@@ -12,9 +12,9 @@ resource "aws_subnet" "private_EJB_subnets" {
 }
 
 #Deploy the public subnets
-resource "aws_subnet" "public_EJB_subnets" {
-  for_each                = var.public_EJB_subnets
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "EJB_public_subnets" {
+  for_each                = var.EJB_public_subnets
+  vpc_id                  = aws_vpc.EJB_vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
   availability_zone       = tolist(data.aws_availability_zones.available.names)[each.value]
   map_public_ip_on_launch = true
@@ -26,8 +26,8 @@ resource "aws_subnet" "public_EJB_subnets" {
 }
 
 #Create route tables for public and private subnets 
-resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "EJB_public_route_table" {
+  vpc_id = aws_vpc.EJB_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -35,51 +35,51 @@ resource "aws_route_table" "public_route_table" {
     #nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
-    Name        = "public_EJB_rtb"
+    Name        = "EJB_public_rtb"
     Terraform   = "true"
     project_tag = local.project_tag
   }
 
 }
 
-resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "EJB_private_route_table" {
+  vpc_id = aws_vpc.EJB_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
     # gateway_id     = aws_internet_gateway.internet_gateway.id
 
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    nat_gateway_id = aws_nat_gateway.EJB_nat_gateway.id
   }
   tags = {
-    Name        = "private_EJB_rtb"
+    Name        = "EJB_private_rtb"
     Terraform   = "true"
     project_tag = local.project_tag
   }
 }
 
 #Create route table associations
-resource "aws_route_table_association" "public" {
-  depends_on     = [aws_subnet.public_EJB_subnets]
-  route_table_id = aws_route_table.public_route_table.id
-  for_each       = aws_subnet.public_EJB_subnets
+resource "aws_route_table_association" "EJB_rt_public" {
+  depends_on     = [aws_subnet.EJB_public_subnets]
+  route_table_id = aws_route_table.EJB_public_route_table.id
+  for_each       = aws_subnet.EJB_public_subnets
   subnet_id      = each.value.id
 }
-resource "aws_route_table_association" "private" {
-  depends_on     = [aws_subnet.private_EJB_subnets]
-  route_table_id = aws_route_table.private_route_table.id
-  for_each       = aws_subnet.private_EJB_subnets
+resource "aws_route_table_association" "EJB_rt_private" {
+  depends_on     = [aws_subnet.EJB_private_subnets]
+  route_table_id = aws_route_table.EJB_private_route_table.id
+  for_each       = aws_subnet.EJB_private_subnets
   subnet_id      = each.value.id
 }
 #Create Internet Gateway
 resource "aws_internet_gateway" "EJB_internet_gateway" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.EJB_vpc.id
   tags = {
     Name        = "EJB_igw"
     project_tag = local.project_tag
   }
 }
 #Create EIP for NAT Gateway
-resource "aws_eip" "nat_gateway_eip" {
+resource "aws_eip" "EJB_nat_gateway_eip" {
   vpc        = true
   depends_on = [aws_internet_gateway.EJB_internet_gateway]
   tags = {
@@ -88,81 +88,30 @@ resource "aws_eip" "nat_gateway_eip" {
   }
 }
 #Create NAT Gateway
-resource "aws_nat_gateway" "nat_gateway" {
-  depends_on    = [aws_subnet.public_EJB_subnets]
-  allocation_id = aws_eip.nat_gateway_eip.id
-  subnet_id     = aws_subnet.public_EJB_subnets["public_EJB_subnet_1"].id
+resource "aws_nat_gateway" "EJB_nat_gateway" {
+  depends_on    = [aws_subnet.EJB_public_subnets]
+  allocation_id = aws_eip.EJB_nat_gateway_eip.id
+  subnet_id     = aws_subnet.EJB_public_subnets["EJB_public_subnet_1"].id
   tags = {
     Name        = "EJB_nat_gateway"
     project_tag = local.project_tag
   }
 }
 
-resource "aws_subnet" "variables-subnet" {
-  vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = var.variables_sub_cidr
-  availability_zone       = var.variables_sub_az
-  map_public_ip_on_launch = var.variables_sub_auto_ip
+resource "aws_subnet" "EJB_variables-subnet" {
+  vpc_id                  = aws_vpc.EJB_vpc.id
+  cidr_block              = var.EJB_variables_sub_cidr
+  availability_zone       = var.EJB_variables_sub_az
+  map_public_ip_on_launch = var.EJB_variables_sub_auto_ip
   tags = {
-    Name        = "EJB-sub-variables-${var.variables_sub_az}"
+    Name        = "EJB-sub-EJB_variables-${var.EJB_variables_sub_az}"
     Terraform   = "true"
     project_tag = local.project_tag
   }
 }
 
-
-
-
-// Web Here 
-# Create Security Group - Web Traffic
-resource "aws_security_group" "EJB-vpc-web" {
-  name        = "EJB-vpc-web-${terraform.workspace}"
-  vpc_id      = aws_vpc.vpc.id
-  description = "Web Traffic"
-  # ingress {
-  #   description = "Allow Port 80"
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
-  ingress {
-    description = "Allow Port 443"
-    from_port   = 80
-    to_port     = 80
-
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    description = "Allow all ip and ports outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+resource "aws_db_subnet_group" "EJB_db_subnet_group" {
+  name        = "ejb-db_subnet_group"
+  description = "DB subnet group"
+  subnet_ids  = [for subnet in aws_subnet.EJB_private_subnets : subnet.id]
 }
-
-resource "aws_security_group" "EJB-vpc-ping" {
-  name        = "vpc-ping"
-  vpc_id      = aws_vpc.vpc.id
-  description = "ICMP for Ping Access"
-
-  ingress {
-    description = "Allow ICMP Traffic"
-    from_port   = -1
-    to_port     = -1
-    protocol    = "icmp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all ip and ports outboun"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-
