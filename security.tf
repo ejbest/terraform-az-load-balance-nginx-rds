@@ -133,3 +133,56 @@ resource "aws_security_group" "EJB_db_sg" {
     Name = "EJB-db-sg"
   }
 }
+
+resource "aws_network_acl" "EJB-acl" {
+  vpc_id = aws_vpc.EJB_vpc.id
+  subnet_ids = local.ec2_subnet_list_private
+  tags = {
+    Name = "EJB-acl"
+  }
+}
+
+resource "aws_network_acl_rule" "EJB-acl-443-allow" {
+  network_acl_id = aws_network_acl.EJB-acl.id
+  rule_number    = 100 + each.value
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  for_each          = var.EJB_public_subnets
+  cidr_block     = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
+  from_port      = 443
+  to_port        = 443
+}
+
+resource "aws_network_acl_rule" "EJB-acl-443-deny" {
+  network_acl_id = aws_network_acl.EJB-acl.id
+  rule_number    = 110
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "deny"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 443
+  to_port        = 443
+}
+
+resource "aws_network_acl_rule" "EJB-acl-ingress" {
+  network_acl_id = aws_network_acl.EJB-acl.id
+  rule_number    = 200
+  egress         = false
+  protocol       = "-1"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = -1
+  to_port        = -1
+}
+
+resource "aws_network_acl_rule" "EJB-acl-egress" {
+  network_acl_id = aws_network_acl.EJB-acl.id
+  rule_number    = 100
+  egress         = true
+  protocol       = "-1"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = -1
+  to_port        = -1
+}

@@ -24,7 +24,7 @@ resource "aws_launch_template" "EJB_asg_template" {
 }
 
 resource "aws_autoscaling_group" "EJB_asg" {
-  depends_on        = [aws_launch_template.EJB_asg_template, aws_nat_gateway.EJB_nat_gateway, aws_route_table_association.EJB_rt_private]
+  depends_on        = [aws_launch_template.EJB_asg_template, aws_nat_gateway.EJB_nat_gateway, aws_route_table_association.EJB_rt_private, aws_network_acl_rule.EJB-acl-egress]
   name_prefix       = "EJB-"
   desired_capacity  = 1
   min_size          = 1
