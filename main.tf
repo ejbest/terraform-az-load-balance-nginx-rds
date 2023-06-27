@@ -4,11 +4,12 @@ data "aws_availability_zones" "available" {}
 data "aws_region" "current" {}
 
 locals {
-  team            = "EJB_dev"
-  application     = "EJB_api"
-  server_name     = "EJB-api-${var.EJB_variables_sub_az}"
-  project_tag     = "EJB"
-  ec2_subnet_list = [aws_subnet.EJB_public_subnets["EJB_public_subnet_1"].id, aws_subnet.EJB_public_subnets["EJB_public_subnet_2"].id, aws_subnet.EJB_public_subnets["EJB_public_subnet_3"].id]
+  team                    = "EJB_dev"
+  application             = "EJB_api"
+  server_name             = "EJB-api-${var.EJB_variables_sub_az}"
+  project_tag             = "EJB"
+  ec2_subnet_list         = [aws_subnet.EJB_public_subnets["EJB_public_subnet_1"].id, aws_subnet.EJB_public_subnets["EJB_public_subnet_2"].id, aws_subnet.EJB_public_subnets["EJB_public_subnet_3"].id]
+  ec2_subnet_list_private = [aws_subnet.EJB_private_subnets["EJB_private_subnet_1"].id, aws_subnet.EJB_private_subnets["EJB_private_subnet_2"].id, aws_subnet.EJB_private_subnets["EJB_private_subnet_3"].id]
 }
 
 #Define the VPC

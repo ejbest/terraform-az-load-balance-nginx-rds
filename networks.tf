@@ -44,11 +44,12 @@ resource "aws_route_table" "EJB_public_route_table" {
 
 resource "aws_route_table" "EJB_private_route_table" {
   vpc_id = aws_vpc.EJB_vpc.id
+  count  = length(var.EJB_private_subnets)
   route {
     cidr_block = "0.0.0.0/0"
     # gateway_id     = aws_internet_gateway.internet_gateway.id
 
-    nat_gateway_id = aws_nat_gateway.EJB_nat_gateway.id
+    nat_gateway_id = aws_nat_gateway.EJB_nat_gateway[count.index].id
   }
   tags = {
     Name        = "EJB_private_rtb"
@@ -66,9 +67,9 @@ resource "aws_route_table_association" "EJB_rt_public" {
 }
 resource "aws_route_table_association" "EJB_rt_private" {
   depends_on     = [aws_subnet.EJB_private_subnets]
-  route_table_id = aws_route_table.EJB_private_route_table.id
-  for_each       = aws_subnet.EJB_private_subnets
-  subnet_id      = each.value.id
+  count          = length(var.EJB_private_subnets)
+  route_table_id = aws_route_table.EJB_private_route_table[count.index].id
+  subnet_id      = element(local.ec2_subnet_list_private, count.index)
 }
 #Create Internet Gateway
 resource "aws_internet_gateway" "EJB_internet_gateway" {
@@ -81,6 +82,7 @@ resource "aws_internet_gateway" "EJB_internet_gateway" {
 #Create EIP for NAT Gateway
 resource "aws_eip" "EJB_nat_gateway_eip" {
   vpc        = true
+  count      = length(var.EJB_private_subnets)
   depends_on = [aws_internet_gateway.EJB_internet_gateway]
   tags = {
     Name        = "EJB_igw_eip"
@@ -90,8 +92,9 @@ resource "aws_eip" "EJB_nat_gateway_eip" {
 #Create NAT Gateway
 resource "aws_nat_gateway" "EJB_nat_gateway" {
   depends_on    = [aws_subnet.EJB_public_subnets]
-  allocation_id = aws_eip.EJB_nat_gateway_eip.id
-  subnet_id     = aws_subnet.EJB_public_subnets["EJB_public_subnet_1"].id
+  count         = length(var.EJB_private_subnets)
+  allocation_id = aws_eip.EJB_nat_gateway_eip[count.index].id
+  subnet_id     = element(local.ec2_subnet_list, count.index)
   tags = {
     Name        = "EJB_nat_gateway"
     project_tag = local.project_tag

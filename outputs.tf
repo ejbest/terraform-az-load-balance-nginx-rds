@@ -11,7 +11,7 @@ output "rds_address" {
 }
 output "elb_dns" {
   description = "Public DNS ELB"
-  value       = "https://${aws_elb.EJB-elb.dns_name}"
+  value       = "https://${aws_lb.EJB-alb.dns_name}"
 }
 
 # output "elb_ip" {
@@ -37,10 +37,10 @@ output "private_key" {
 }
 
 
-output "ssh_cmd" {
-  description = "Private Key"
-  value       = "ssh -i ${local_file.EJB_private_key_pem.filename} ubuntu@${data.aws_instances.EJB_ec2_instances.public_ips[0]}"
-}
+#output "ssh_cmd" {
+#  description = "Private Key"
+#  value       = "ssh -i ${local_file.EJB_private_key_pem.filename} ubuntu@${data.aws_instances.EJB_ec2_instances.public_ips[0]}"
+#}
 
 output "db_username" {
   description = "DB username"
@@ -48,7 +48,7 @@ output "db_username" {
 }
 
 
-output "db_password" {
-  description = "DB Password"
-  value       = random_password.EJB-password.result
-}
+# output "db_password" {
+#   description = "DB Password"
+#   value       = random_password.EJB-password.result
+# }

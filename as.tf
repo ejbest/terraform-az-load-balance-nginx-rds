@@ -2,7 +2,7 @@ resource "aws_launch_template" "EJB_asg_template" {
   name                   = "EJB_asg_template"
   instance_type          = "t2.micro"
   image_id               = data.aws_ami.ubuntu.id
-  vpc_security_group_ids = [aws_security_group.EJB-web-app.id]
+  vpc_security_group_ids = [aws_security_group.EJB-ec2.id]
   user_data              = base64encode(data.template_file.user_data.rendered)
   key_name               = aws_key_pair.EJB_generated.key_name
 
@@ -24,20 +24,21 @@ resource "aws_launch_template" "EJB_asg_template" {
 }
 
 resource "aws_autoscaling_group" "EJB_asg" {
-  depends_on        = [aws_launch_template.EJB_asg_template]
+  depends_on        = [aws_launch_template.EJB_asg_template, aws_nat_gateway.EJB_nat_gateway, aws_route_table_association.EJB_rt_private]
   name_prefix       = "EJB-"
   desired_capacity  = 1
   min_size          = 1
   max_size          = 5
   health_check_type = "EC2"
-  load_balancers    = [aws_elb.EJB-elb.id]
+  #load_balancers    = [aws_lb.EJB-alb.id]
+  target_group_arns = [aws_lb_target_group.EJB_https.arn]
   #load_balancers            = ["${aws_elb.elb.id}"]
   launch_template {
     id      = aws_launch_template.EJB_asg_template.id
     version = "$Latest"
   }
   #launch_configuration      = aws_launch_template.asg_template.name
-  vpc_zone_identifier = local.ec2_subnet_list
+  vpc_zone_identifier = local.ec2_subnet_list_private
   lifecycle {
     create_before_destroy = true
   }
