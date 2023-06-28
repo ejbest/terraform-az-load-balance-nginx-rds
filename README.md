@@ -1,5 +1,33 @@
 # az-load-balance-nginx-rds
 
+#### How to make this run
+export two vars
+<pre>
+#access_key = data.vault_aws_access_credentials.terraform.access_key
+#secret_key = data.vault_aws_access_credentials.terraform.secret_key
+</pre>
+terraform fmt
+<br>terraform init
+<br>terraform validate
+<br>terraform plan
+<br>terraform apply
+
+### RESULT - examples 
+- us-east-1
+- Multi (3) availability zones
+- Applcation Load Balancer
+- Nginx Server 
+- Network ACL and Security Group usage
+- Nat Gateways and Routing Tables
+
+### Template 
+- This repo will stand as a fair template and working ready to go model for any AWS VPC project.
+- Can add any services, region, lambda, ecs, fargat, eks or otherwise servies or add regions.
+- Start with this environment and expand and continue from here 
+- Have fun 
+
+Was part of a testing effort 
+
 Goal was to create an nginx service that utilizes multi-az in AWS.  This web service must be accessable from a public IP.  Create a RDS Server that will the Web will have access.   All configurations must be as secure as possible (think of everything that must be done to make everything secure).  The web server needs to scale on-demand; whent the CPU load hits 65% or higher it needs to scale on-demand.  When the load is 40% or lower needs to scale down.
 
 Of course this is a sandbox exercise and should not affect any items in AWS, so tag and name for your identification.  All infrastructure components must be created using Terraform.  OS and web application configrations does not need to be automated at this point.  
