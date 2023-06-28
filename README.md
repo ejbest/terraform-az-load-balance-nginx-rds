@@ -3,8 +3,8 @@
 #### How to make this run
 export two vars
 <pre>
-#access_key = data.vault_aws_access_credentials.terraform.access_key
-#secret_key = data.vault_aws_access_credentials.terraform.secret_key
+#access_key = <your access key>
+#secret_key = <your secret_key>
 </pre>
 terraform fmt
 <br>terraform init
@@ -24,7 +24,7 @@ terraform fmt
 - This repo will stand as a fair template and working ready to go model for any AWS VPC project.
 - Can add any services, region, lambda, ecs, fargat, eks or otherwise servies or add regions.
 - Start with this environment and expand and continue from here 
-- Have fun 
+- see providers.tf and you can see how to integrate Hashicorp Vault 
 
 Was part of a testing effort 
 
