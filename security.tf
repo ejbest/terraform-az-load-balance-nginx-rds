@@ -135,7 +135,7 @@ resource "aws_security_group" "EJB_db_sg" {
 }
 
 resource "aws_network_acl" "EJB-acl" {
-  vpc_id = aws_vpc.EJB_vpc.id
+  vpc_id     = aws_vpc.EJB_vpc.id
   subnet_ids = local.ec2_subnet_list_private
   tags = {
     Name = "EJB-acl"
@@ -148,7 +148,7 @@ resource "aws_network_acl_rule" "EJB-acl-443-allow" {
   egress         = false
   protocol       = "tcp"
   rule_action    = "allow"
-  for_each          = var.EJB_public_subnets
+  for_each       = var.EJB_public_subnets
   cidr_block     = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
   from_port      = 443
   to_port        = 443
